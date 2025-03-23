@@ -1,0 +1,21 @@
+## This script provides a text-based, interactive way to understand the Tower of Hanoi puzzle, visualizing each step in the console.
+### Explanation:
+
+1. **TowerOfHanoi Function**:
+   - This function solves the Tower of Hanoi puzzle recursively and returns the sequence of moves.
+
+2. **tripleView Function**:
+   - This function visualizes the current state of the towers and disks in the console.
+   - It uses characters to draw disks and towers, providing a simple text-based representation.
+
+3. **clear Function**:
+   - This function clears the console screen, using either `clear_output` from IPython or the system's clear command.
+
+4. **play_hanoi Function**:
+   - This function manages the gameplay, allowing the user to step through the solution one move at a time.
+   - It uses `input` to pause after each move, waiting for the user to press Enter.
+
+5. **main Function**:
+   - This function initializes the game, either taking the number of disks from command-line arguments or prompting the user for input.
+   - It then solves the puzzle and starts the gameplay loop.
+
