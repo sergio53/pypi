@@ -1,3 +1,5 @@
+## This script provides a visual and interactive way to understand the Tower of Hanoi puzzle.
+
 ### Explanation:
 
 1. **TowerOfHanoiSolver Function**:
@@ -14,5 +16,3 @@
 
 4. **TowerOfHanoiRunner Function**:
    - This function ties everything together, solving the puzzle and setting up the visualization.
-
-This script provides a visual and interactive way to understand the Tower of Hanoi puzzle.
