@@ -21,3 +21,7 @@
 
 5. **Main Execution**:
    - The script checks command-line arguments to determine the number of disks and starts the game with default tower labels ("A", "B", "C") if no arguments are provided.
+
+<hr style="border: 1px solid green;  border-radius: 2px;   margin-top: 0px; margin-bottom: 0px;">
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://2i2c.mybinder.org/v2/gh/sergio53/pypi/HEAD)
