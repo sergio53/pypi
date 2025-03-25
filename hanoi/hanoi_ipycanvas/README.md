@@ -24,6 +24,6 @@
 
 <hr style="border: 1px solid green;  border-radius: 2px;   margin-top: 0px; margin-bottom: 0px;">
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sergio53/pypi.git/HEAD?urlpath=%2Fdoc%2Ftree%2Fhanoi%2Fhanoi_ipycanvas%2FHanoi_ipycanvas.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg) notebook](https://mybinder.org/v2/gh/sergio53/pypi.git/HEAD?urlpath=%2Fdoc%2Ftree%2Fhanoi%2Fhanoi_ipycanvas%2FHanoi_ipycanvas.ipynb)
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sergio53/pypi.git/HEAD?urlpath=voila%2Frender%2Fhanoi%2Fhanoi_ipycanvas%2FHanoi_ipycanvas.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg) voila](https://mybinder.org/v2/gh/sergio53/pypi.git/HEAD?urlpath=voila%2Frender%2Fhanoi%2Fhanoi_ipycanvas%2FHanoi_ipycanvas.ipynb)
