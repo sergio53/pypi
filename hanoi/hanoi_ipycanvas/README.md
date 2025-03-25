@@ -26,4 +26,4 @@
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sergio53/pypi.git/HEAD?urlpath=%2Fdoc%2Ftree%2Fhanoi%2Fhanoi_ipycanvas%2FHanoi_ipycanvas.ipynb)
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sergio53/pypi.git/HEAD?urlpath=%2Fdoc%2Ftree%2Fvoila%2Frender%2Fhanoi%2Fhanoi_ipycanvas%2FHanoi_ipycanvas.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sergio53/pypi.git/HEAD?urlpath=voila%2Frender%2Fhanoi%2Fhanoi_ipycanvas%2FHanoi_ipycanvas.ipynb)
