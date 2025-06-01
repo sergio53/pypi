@@ -1,0 +1,15 @@
+{
+  "load_extensions": {
+    "codefolding/edit": true
+  },
+  "Editor": {
+    "file_extension_modes": {
+      ".py": "Python"
+    },
+    "codemirror_options": {
+      "indentUnit": 2,
+      "vimMode": false,
+      "keyMap": "default"
+    }
+  }
+}

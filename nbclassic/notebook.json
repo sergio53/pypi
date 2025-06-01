@@ -1,0 +1,23 @@
+{
+  "load_extensions": {
+    "nbextensions_configurator/config_menu/main": true,
+    "contrib_nbextensions_help_item/main": true,
+    "codefolding/main": true,
+    "scratchpad/main": true,
+    "toggle_all_line_numbers/main": true,
+    "hinterland/hinterland": true,
+    "autosavetime/main": true,
+    "full_width/full_width": true,
+    "freeze/main": true
+  },
+  "CodeCell": {
+    "cm_config": {
+      "indentUnit": 2
+    }
+  },
+  "Cell": {
+    "cm_config": {
+      "lineNumbers": true
+    }
+  }
+}
