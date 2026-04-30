@@ -1,3 +1,8 @@
+"""
+Здесь был Вася!
+"""
+print("Здесь был Вася!")
+
 import math
 from ipycanvas import Canvas, MultiCanvas, hold_canvas
 import ipywidgets as widgets
@@ -121,6 +126,59 @@ def get_lines_intersection(p1, p2, p3, p4):
 
     return None
 
+def get_circle_line_intersection(c_center, c_point, l_p1, l_p2, tol=1e-9):
+    """
+    Находит точки пересечения окружности и прямой.
+    
+    :param c_center: (x, y) центра окружности
+    :param c_point: (x, y) точки на окружности
+    :param l_p1: (x, y) первая точка на прямой
+    :param l_p2: (x, y) вторая точка на прямой
+    :param tol: погрешность для обработки чисел с плавающей точкой
+    :return: список кортежей [(x1, y1), ...] точек пересечения (0, 1 или 2 точки)
+    """
+    cx, cy = c_center
+    px, py = c_point
+    x1, y1 = l_p1
+    x2, y2 = l_p2
+    
+    # 1. Вычисляем квадрат радиуса окружности
+    r_sq = (px - cx)**2 + (py - cy)**2
+    
+    # 2. Сдвигаем систему координат, делая центр окружности точкой (0, 0)
+    x1_rel, y1_rel = x1 - cx, y1 - cy
+    x2_rel, y2_rel = x2 - cx, y2 - cy
+    
+    # 3. Применяем стандартный алгоритм пересечения
+    dx = x2_rel - x1_rel
+    dy = y2_rel - y1_rel
+    dr_sq = dx**2 + dy**2
+    D = x1_rel * y2_rel - x2_rel * y1_rel
+    
+    # Вычисляем дискриминант
+    discriminant = r_sq * dr_sq - D**2
+    
+    # Нет пересечений
+    if discriminant < -tol:
+        return []
+    
+    # Прямая касается окружности (одна точка)
+    if abs(discriminant) < tol:
+        x = (D * dy) / dr_sq
+        y = (-D * dx) / dr_sq
+        return [(x + cx, y + cy)]
+    
+    # Прямая пересекает окружность (две точки)
+    sqrt_disc = math.sqrt(discriminant)
+    sgn_dy = 1 if dy >= 0 else -1
+    
+    x_a = (D * dy + sgn_dy * dx * sqrt_disc) / dr_sq
+    x_b = (D * dy - sgn_dy * dx * sqrt_disc) / dr_sq
+    y_a = (-D * dx + abs(dy) * sqrt_disc) / dr_sq
+    y_b = (-D * dx - abs(dy) * sqrt_disc) / dr_sq
+    
+    return [(x_a + cx, y_a + cy), (x_b + cx, y_b + cy)]
+
 is_Voila = 'VOILA_REQUEST_URL' in os.environ
 canvas = Canvas(width=1210, height=650) if is_Voila else Canvas(width=1100, height=500)
 
@@ -207,11 +265,6 @@ if is_Voila:
   app_ui = app_UI
 else:
   app_ui = widgets.VBox([app_UI, dev_UI], layout=widgets.Layout(border='1px solid #ccc'))
-
-"""  
-#<
-parser = lambda script : {_[1][0]:(_[0],_[1][1:]) for _ in [(_[0], _[1].split(',')) for _ in [_.split(sep) for _ in "".join(script.split()).split(";") if _]]}
-"""
 
 def termed():
   editor.value += f"{terminal.value}\n"
@@ -316,8 +369,16 @@ class engine():
             xy = get_lines_intersection(*p1234)
             self.redraw(k, ('.', *xy))
             self.display()
-            pass  
-  
+          elif sh1[0] == "@" and sh2[0] == "=":
+            # пересечение окружности и прямой прямой
+            # get_circle_line_intersection(c_center, c_point, l_p1, l_p2, tol=1e-9)
+            p1234 = self.pcode[sh1[1]][1:], self.pcode[sh1[2]][1:], self.pcode[sh2[1]][1:], self.pcode[sh2[2]][1:]
+            p1, p2= get_circle_line_intersection(*p1234)
+            lb1, lb2 = k.split(',')
+            self.pcode[lb1] = ('.', *p1); self.pcode[lb2] = ('.', *p2)
+            self.redraw(lb1, ('.', *p1)); self.redraw(lb2, ('.', *p2))
+            self.display()
+            
   def display(self):
     Display(self.pcode, clr=1)
 
@@ -346,26 +407,55 @@ class engine():
       self.redraw()
   
   def terminal(self, sender):
-    Print(f"{sender.value=}")
-    self.cmd_exec(sender.value)    
+    #Print(f"{sender.value=}")
+    valstrip = sender.value.strip()
+    if valstrip == '%save':
+      sender.value = editor.value = ""
+      self.save()
+    if valstrip == '%restore':
+      sender.value = editor.value = ""
+      self.restore()
+    elif valstrip == "#":
+      # чистим pcode
+      sender.value = editor.value = ""
+      self.pcode = {}
+      self.display()
+      self.redraw()
+    elif valstrip == "##":
+      # чистим macros
+      sender.value = editor.value = ""
+      self.macros = {}
+      self.display()
+      self.redraw()
+    elif valstrip == "###":
+      # чистим pcode & macros
+      sender.value = editor.value = ""
+      self.macros = {}
+      self.display()
+      self.redraw()
+    elif valstrip == '?':
+      # загружаем разметку
+      self.display()
+      sender.value = editor.value = ""
+      for k,v in self.pcode.items():
+        editor.value += " ".join((k, v[0], '' if v[0]=="." else " ".join(v[1:]))) + '\n'      
+    elif valstrip[0] == '&':
+      if len(valstrip) == 1:
+        # загружаем перечень макрокоманд в editor
+        editor.value = "\n".join([_ for _ in self.macros])
+        if self.macros == {}:
+          sender.value = ""
+      elif valstrip[1:] in self.macros:
+        # загружаем текст макрокоманды в editor для просмотра/редактирования
+        sender.value = ""
+        editor.value = "\n".join((valstrip, self.macros[valstrip[1:]]))        
+    else:
+      self.cmd_exec(sender.value)
+
   def cmd_exec(self, cmd, show=True):
     val = cmd.split()
     if val[0] == '.':
       return
-    elif val[0][0] == '?':
-      if val[0][1:] == '':
-        # загружаем разметку
-        editor.value = ""
-        for k,v in self.pcode.items():
-          editor.value += " ".join((k, v[0], '' if v[0]=="." else " ".join(v[1:]))) + '\n'   
-    elif val[0][0] == '&':
-      if val[0][1:] == '':
-        # загружаем перечень макрокоманд в editor
-        if val[0][1:] == '':
-          editor.value = "\n".join([_ for _ in E.macros])  
-      elif val[0][1:] in self.macros:
-        # загружаем текст макрокоманды в editor для просмотра/редактирования
-        editor.value = "\n".join((val[0], self.macros[val[0][1:]]))
     elif val[0][0] == '!':
       # Исполняем макрокоманду 
       #val[0][0],   val[0][1:], val[1:]
@@ -429,7 +519,7 @@ class engine():
     canvas.text_baseline = 'middle' # Вертикальное центрирование
     # Теперь указываем координаты ровно посередине холста
     canvas.fill_text(invite, canvas.width / 2, canvas.height / 2)
-
+# class engine(): -----------------------------------------------------------------------
 E = engine()
 
 import warnings
