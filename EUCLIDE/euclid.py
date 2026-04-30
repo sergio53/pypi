@@ -1,8 +1,3 @@
-"""
-Здесь был Вася!
-"""
-print("Здесь был Вася!")
-
 import math
 from ipycanvas import Canvas, MultiCanvas, hold_canvas
 import ipywidgets as widgets
