@@ -1,6 +1,0 @@
-Constant parameters values
-Max precision for double: 2.22045e-16
-Gas constant: 8.314
-Boltzman constant: 1.38e-23
-WARNING: If you have only one couple temperature-Young modulus, Young modulus is independant of temperature
-WARNING: If you have only one couple temperature-Poisson coeff, Poisson coeff is independant of temperature
