@@ -1,24 +1,9 @@
 todo_list = """
-  &midpoint $1 $2 $3
-  // $1-midpoint result
-  // $2-irst point 
-  // $3-second point
-  
-  = ab $2 $3
-  @ Ca $2 $3
-  @ Cb $3 $2
-  + p1,p2 Ca Cb
-  = p1p2 p1 p2
-  + $1 ab p1p2
+#E.macro_exec(*terminal.value[1:].split())
+#p__code = E.macro_exec('midpoint', 'mp', 'A', 'B')
+E.pcode['mp'] = ('.', 349.6000061035156, 227.67499542236328)
+E.redraw()
 """
-import math
-from ipycanvas import Canvas, MultiCanvas, hold_canvas
-import ipywidgets as widgets
-from IPython.display import display, clear_output, Javascript, Audio
-import os
-import sys
-import numpy as np
-import json
 
 # Словарь групп на французском
 # Формат: 'Название группы': (('Французское имя', 'EnglishName'), ...)
@@ -79,6 +64,16 @@ COLORS_FR = {
     )
 }
 
+
+import math
+from ipycanvas import Canvas, MultiCanvas, hold_canvas
+import ipywidgets as widgets
+from IPython.display import display, clear_output, Javascript, Audio
+import os
+import sys
+import numpy as np
+import json
+
 def get_circles_intersection(p1, p2, p3, p4):
   # Окружность 1: центр p1, точка на ободе p2
   # Окружность 2: центр p3, точка на ободе p4
@@ -101,91 +96,91 @@ def get_circles_intersection(p1, p2, p3, p4):
   return [(x0 + rx, y0 + ry), (x0 - rx, y0 - ry)]
 
 def get_lines_intersection(p1, p2, p3, p4):
-    """
-    Находит точку пересечения двух отрезков.
-    Возвращает [x, y] или None, если отрезки не пересекаются.    
-    """
-    # Пример использования:
-    # seg1 = [[0, 0], [10, 10]]
-    # seg2 = [[0, 10], [10, 0]]
-    # Print(get_lines_intersection(*seg1, *seg2)) # Вывод: [5.0, 5.0]
-    
-    x1, y1 = p1
-    x2, y2 = p2
-    x3, y3 = p3
-    x4, y4 = p4
+  """
+  Находит точку пересечения двух отрезков.
+  Возвращает [x, y] или None, если отрезки не пересекаются.    
+  """
+  # Пример использования:
+  # seg1 = [[0, 0], [10, 10]]
+  # seg2 = [[0, 10], [10, 0]]
+  # Print(get_lines_intersection(*seg1, *seg2)) # Вывод: [5.0, 5.0]
 
-    # Знаменатель (определитель)
-    denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1)
-    
-    # Если знаменатель 0, отрезки параллельны
-    if denom == 0:
-        return None
+  x1, y1 = p1
+  x2, y2 = p2
+  x3, y3 = p3
+  x4, y4 = p4
 
-    # Параметры положения точки пересечения на прямых
-    ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom
-    ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom
+  # Знаменатель (определитель)
+  denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1)
 
-    # Если ua и ub лежат в диапазоне от 0 до 1, то пересечение внутри отрезков
-    if 0 <= ua <= 1 and 0 <= ub <= 1:
-        x = x1 + ua * (x2 - x1)
-        y = y1 + ua * (y2 - y1)
-        return [x, y]
-
+  # Если знаменатель 0, отрезки параллельны
+  if denom == 0:
     return None
 
+  # Параметры положения точки пересечения на прямых
+  ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom
+  ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom
+
+  # Если ua и ub лежат в диапазоне от 0 до 1, то пересечение внутри отрезков
+  if 0 <= ua <= 1 and 0 <= ub <= 1:
+    x = x1 + ua * (x2 - x1)
+    y = y1 + ua * (y2 - y1)
+    return [x, y]
+
+  return None
+
 def get_circle_line_intersection(c_center, c_point, l_p1, l_p2, tol=1e-9):
-    """
-    Находит точки пересечения окружности и прямой.
-    
-    :param c_center: (x, y) центра окружности
-    :param c_point: (x, y) точки на окружности
-    :param l_p1: (x, y) первая точка на прямой
-    :param l_p2: (x, y) вторая точка на прямой
-    :param tol: погрешность для обработки чисел с плавающей точкой
-    :return: список кортежей [(x1, y1), ...] точек пересечения (0, 1 или 2 точки)
-    """
-    cx, cy = c_center
-    px, py = c_point
-    x1, y1 = l_p1
-    x2, y2 = l_p2
-    
-    # 1. Вычисляем квадрат радиуса окружности
-    r_sq = (px - cx)**2 + (py - cy)**2
-    
-    # 2. Сдвигаем систему координат, делая центр окружности точкой (0, 0)
-    x1_rel, y1_rel = x1 - cx, y1 - cy
-    x2_rel, y2_rel = x2 - cx, y2 - cy
-    
-    # 3. Применяем стандартный алгоритм пересечения
-    dx = x2_rel - x1_rel
-    dy = y2_rel - y1_rel
-    dr_sq = dx**2 + dy**2
-    D = x1_rel * y2_rel - x2_rel * y1_rel
-    
-    # Вычисляем дискриминант
-    discriminant = r_sq * dr_sq - D**2
-    
-    # Нет пересечений
-    if discriminant < -tol:
-        return []
-    
-    # Прямая касается окружности (одна точка)
-    if abs(discriminant) < tol:
-        x = (D * dy) / dr_sq
-        y = (-D * dx) / dr_sq
-        return [(x + cx, y + cy)]
-    
-    # Прямая пересекает окружность (две точки)
-    sqrt_disc = math.sqrt(discriminant)
-    sgn_dy = 1 if dy >= 0 else -1
-    
-    x_a = (D * dy + sgn_dy * dx * sqrt_disc) / dr_sq
-    x_b = (D * dy - sgn_dy * dx * sqrt_disc) / dr_sq
-    y_a = (-D * dx + abs(dy) * sqrt_disc) / dr_sq
-    y_b = (-D * dx - abs(dy) * sqrt_disc) / dr_sq
-    
-    return [(x_a + cx, y_a + cy), (x_b + cx, y_b + cy)]
+  """
+  Находит точки пересечения окружности и прямой.
+
+  :param c_center: (x, y) центра окружности
+  :param c_point: (x, y) точки на окружности
+  :param l_p1: (x, y) первая точка на прямой
+  :param l_p2: (x, y) вторая точка на прямой
+  :param tol: погрешность для обработки чисел с плавающей точкой
+  :return: список кортежей [(x1, y1), ...] точек пересечения (0, 1 или 2 точки)
+  """
+  cx, cy = c_center
+  px, py = c_point
+  x1, y1 = l_p1
+  x2, y2 = l_p2
+
+  # 1. Вычисляем квадрат радиуса окружности
+  r_sq = (px - cx)**2 + (py - cy)**2
+
+  # 2. Сдвигаем систему координат, делая центр окружности точкой (0, 0)
+  x1_rel, y1_rel = x1 - cx, y1 - cy
+  x2_rel, y2_rel = x2 - cx, y2 - cy
+
+  # 3. Применяем стандартный алгоритм пересечения
+  dx = x2_rel - x1_rel
+  dy = y2_rel - y1_rel
+  dr_sq = dx**2 + dy**2
+  D = x1_rel * y2_rel - x2_rel * y1_rel
+
+  # Вычисляем дискриминант
+  discriminant = r_sq * dr_sq - D**2
+
+  # Нет пересечений
+  if discriminant < -tol:
+    return []
+
+  # Прямая касается окружности (одна точка)
+  if abs(discriminant) < tol:
+    x = (D * dy) / dr_sq
+    y = (-D * dx) / dr_sq
+    return [(x + cx, y + cy)]
+
+  # Прямая пересекает окружность (две точки)
+  sqrt_disc = math.sqrt(discriminant)
+  sgn_dy = 1 if dy >= 0 else -1
+
+  x_a = (D * dy + sgn_dy * dx * sqrt_disc) / dr_sq
+  x_b = (D * dy - sgn_dy * dx * sqrt_disc) / dr_sq
+  y_a = (-D * dx + abs(dy) * sqrt_disc) / dr_sq
+  y_b = (-D * dx - abs(dy) * sqrt_disc) / dr_sq
+
+  return [(x_a + cx, y_a + cy), (x_b + cx, y_b + cy)]
 
 is_Voila = 'VOILA_REQUEST_URL' in os.environ
 canvas = Canvas(width=1210, height=650) if is_Voila else Canvas(width=1100, height=500)
@@ -324,13 +319,15 @@ class engine():
     display(vars(self))
     return ""
   
-  def redraw(self, *kv):
+  def redraw(self, *kv, pcode=None):
+    if pcode is None:
+      pcode = self.pcode
     with hold_canvas():
       if len(kv) == 0:
         self.reset()
         Print()        
-        for k,v in self.pcode.items():
-          self.redraw(k, v)
+        for k,v in pcode.items():
+          self.redraw(k, v, pcode=pcode)
       else:
         k,v = kv
         Print(f"{k=}; {v=}")
@@ -343,50 +340,48 @@ class engine():
           canvas.fill_text(k, x+8, y-8)
         elif v[0] == "=": # segment
           canvas.stroke_style = 'peru'          
-          #o1o2 = [self.pcode[_][1:] for _ in self.pcode[k][1:] if _ in self.pcode]
-          if len(o1o2:=[self.pcode[_][1:] for _ in self.pcode[k][1:] if _ in self.pcode]) == 2:
+          if len(o1o2:=[pcode[_][1:] for _ in pcode[k][1:] if _ in pcode]) == 2:
             o1, o2 = o1o2
             canvas.stroke_line(o1[0], o1[1], o2[0], o2[1])
         elif v[0] == "@": # circle
-          #k='C1', v=('@', 'A', 'B')
-          #o1, o2 = [self.pcode[_][1] for _ in self.pcode[k][1]]
           o1, o2 = v[1:]
-          o1, o2 = self.pcode[v[1]][1:], self.pcode[v[2]][1:]
+          o1, o2 = pcode[v[1]][1:], pcode[v[2]][1:]
           radius = math.sqrt((o1[0] - o2[0])**2 + (o1[1] - o2[1])**2)
           canvas.begin_path()
           canvas.stroke_style = 'gold'
           canvas.arc(o1[0], o1[1], radius, 0, 2 * math.pi)
           canvas.stroke()
         elif v[0] == "+": # intersect
-          sh1, sh2 = self.pcode.get(v[1]), self.pcode.get(v[2])
+          sh1, sh2 = pcode.get(v[1]), pcode.get(v[2])
           if None in (sh1, sh2):
             return
           if sh1[0] == "@" and sh2[0] == "@":
             # пересечение окружностей
-            p1234 = self.pcode[sh1[1]][1:], self.pcode[sh1[2]][1:], self.pcode[sh2[1]][1:], self.pcode[sh2[2]][1:]
+            p1234 = pcode[sh1[1]][1:], pcode[sh1[2]][1:], pcode[sh2[1]][1:], pcode[sh2[2]][1:]
             p1, p2= get_circles_intersection(*p1234)
             lb1, lb2 = k.split(',')
-            self.pcode[lb1] = ('.', *p1); self.pcode[lb2] = ('.', *p2)
-            self.redraw(lb1, ('.', *p1)); self.redraw(lb2, ('.', *p2))
+            pcode[lb1] = ('.', *p1); pcode[lb2] = ('.', *p2)
+            self.redraw(lb1, ('.', *p1), pcode=pcode); self.redraw(lb2, ('.', *p2), pcode=pcode)
             self.display()
           elif sh1[0] == "=" and sh2[0] == "=":
             # пересечение прямых  
             #get_lines_intersection(p1, p2, p3, p4)
-            sh1, sh2 = self.pcode[v[1]], self.pcode[v[2]]
-            p1234 = self.pcode[sh1[1]][1:], self.pcode[sh1[2]][1:], self.pcode[sh2[1]][1:], self.pcode[sh2[2]][1:]
+            sh1, sh2 = pcode[v[1]], pcode[v[2]]
+            p1234 = pcode[sh1[1]][1:], pcode[sh1[2]][1:], pcode[sh2[1]][1:], pcode[sh2[2]][1:]
             xy = get_lines_intersection(*p1234)
-            self.redraw(k, ('.', *xy))
+            self.redraw(k, ('.', *xy), pcode=pcode)
             self.display()
           elif sh1[0] == "@" and sh2[0] == "=":
             # пересечение окружности и прямой прямой
             # get_circle_line_intersection(c_center, c_point, l_p1, l_p2, tol=1e-9)
-            p1234 = self.pcode[sh1[1]][1:], self.pcode[sh1[2]][1:], self.pcode[sh2[1]][1:], self.pcode[sh2[2]][1:]
+            p1234 = pcode[sh1[1]][1:], pcode[sh1[2]][1:], pcode[sh2[1]][1:], pcode[sh2[2]][1:]
             p1, p2= get_circle_line_intersection(*p1234)
             lb1, lb2 = k.split(',')
-            self.pcode[lb1] = ('.', *p1); self.pcode[lb2] = ('.', *p2)
-            self.redraw(lb1, ('.', *p1)); self.redraw(lb2, ('.', *p2))
+            pcode[lb1] = ('.', *p1); pcode[lb2] = ('.', *p2)
+            self.redraw(lb1, ('.', *p1), pcode=pcode); self.redraw(lb2, ('.', *p2), pcode=pcode)
             self.display()
-            
+    return pcode
+
   def display(self):
     Display(self.pcode, clr=1)
 
@@ -454,10 +449,10 @@ class engine():
         editor.value = "\n".join([_ for _ in self.macros])
         if self.macros == {}:
           sender.value = ""
+        self.display()  
       elif valstrip[1:] in self.macros:
         # загружаем текст макрокоманды в editor для просмотра/редактирования
         sender.value = ""
-        #editor.value = "\n".join((valstrip, self.macros[valstrip[1:]]))        
         editor.value = "&"+"\n".join((self.macros[valstrip[1:]]))
     else:
       self.cmd_exec(sender.value)
@@ -469,7 +464,7 @@ class engine():
     elif val[0][0] == '!':
       # Исполняем макрокоманду
       # val[0][0], val[0][1:], val[1:]
-      body = E.macros[val[0][1:]]
+      body = self.macros[val[0][1:]]
       n = 0
       for _ in val[1:]:
         n += 1
@@ -516,6 +511,32 @@ class engine():
           self.redraw()
           termed()
         
+  def macro_exec(self, *call, pcode=None):
+    """
+    __code = self.macro_exec('midpoint', 'mp', 'A', 'B', ) 
+       OR
+    __code = self.macro_exec(*terminal.value[1:].split())
+    self.redraw(pcode=p__code)    
+    """
+    if pcode is None:
+      pcode = self.pcode
+    macro = self.macros[call[0]][1]
+    argv = self.macros[call[0]][0].split()[1:]
+    for k,v in dict(zip(argv, call[1:])).items():
+      macro = macro.replace(k,v)
+    p_code ={}
+    for _ in call[2:]:
+      p_code[_] = pcode[_]
+    for b in macro.split('\n'):
+      if b.startswith('//'):
+        continue
+      bb = b.split()
+      p_code[bb[1]] = [bb[0], *bb[2:]]    
+      if ',' in bb[1]:
+        lb1, lb2 = bb[1].split(',')
+        p_code[lb1] = p_code[lb2] = ('.', -1,-1 )
+    return p_code
+
   def first(self):
     self.redraw()
     return
