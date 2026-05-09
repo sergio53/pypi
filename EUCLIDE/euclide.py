@@ -4,7 +4,11 @@ todo_list = """
 E.pcode['mp'] = ('.', 349.6000061035156, 227.67499542236328)
 E.redraw()
 """
-
+"""
+define of circle
+1- @ center point on a circle
+2- @ center point1 point2 (radius = distancee between point1 pont2)
+"""
 # Словарь групп на французском
 # Формат: 'Название группы': (('Французское имя', 'EnglishName'), ...)
 COLOUR_GROUPS = {
