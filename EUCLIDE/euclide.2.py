@@ -87,8 +87,6 @@ def redraw(*kv):
       else:
         return
 
-  
-
 def handle_cmd(cmd):
   lbl = cmd.split()
   pcode[lbl[1]] = (lbl[0], *lbl[2:])
