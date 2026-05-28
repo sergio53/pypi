@@ -8,6 +8,7 @@ E.redraw()
 define of circle
 1- @ center point on a circle
 2- @ center point1 point2 (radius = distancee between point1 pont2)
++ это операция
 """
 # Словарь групп на французском
 # Формат: 'Название группы': (('Французское имя', 'EnglishName'), ...)
@@ -368,8 +369,11 @@ class engine():
             self.redraw(lb1, ('.', *p1), pcode=pcode); self.redraw(lb2, ('.', *p2), pcode=pcode)
             self.display()
           elif sh1[0] == "=" and sh2[0] == "=":
+            """
+            #!! отсутствует регистрация точки пересечения в self.pcode
             # пересечение прямых  
             #get_lines_intersection(p1, p2, p3, p4)
+            """
             sh1, sh2 = pcode[v[1]], pcode[v[2]]
             p1234 = pcode[sh1[1]][1:], pcode[sh1[2]][1:], pcode[sh2[1]][1:], pcode[sh2[2]][1:]
             xy = get_lines_intersection(*p1234)
@@ -461,11 +465,37 @@ class engine():
     else:
       self.cmd_exec(sender.value)
 
+  def compiler(self, *call):
+    """ call = name_macro, name_result, name_arg1,... name_argN
+      cmd = '!name_macro name_result name_arg1 ... name_argN'; self.compiler(*cmd[1:].split()))
+      or
+      self.compiler(*'!name_macro name_result name_arg1 ... name_argN'[1:].split())
+    """
+    #proc = {}; 
+    proc = {call[1]: ['.',]}
+    cnt = 2
+    for _ in call[cnt:]:
+      proc[f"${cnt}"] = self.pcode[_]
+      cnt += 1
+    body = self.macros[call[0]][1]
+    for line in body.split('\n'):
+      if line.startswith('//'):
+        continue
+      code = line.split()
+      proc[code[1]] = [code[0], *code[2:]]
+      if ',' in code[1]:
+        for p in code[1].split(','):
+          proc[p] = ['.',]      
+    return proc
+  
   def cmd_exec(self, cmd, show=True):
     val = cmd.split()
     if val[0] == '.':
       return
     elif val[0][0] == '!':
+      script = self.compiler(*cmd[1:].split())
+      Display(script)
+      """
       # Исполняем макрокоманду
       # val[0][0], val[0][1:], val[1:]
       body = self.macros[val[0][1:]]
@@ -478,6 +508,7 @@ class engine():
             self.cmd_exec(cmd, show=False)
       self.redraw()
       termed()
+      """      
     elif val[0] == '#':
       """удалить(если есть) объектЫ
       # p1,p2 p1 p2 p1p2 """
@@ -510,6 +541,9 @@ class engine():
         if ',' in val[1]:
           lb1, lb2 = val[1].split(',')
           self.pcode[lb1] = self.pcode[lb2] = ('.', -1,-1 )
+        else:
+          self.pcode[f"{val[1]},"] = (val[0], val[2], val[3])
+          self.pcode[val[1]] = ('.', -1, -1)
         self.display()
         if show:
           self.redraw()
@@ -539,7 +573,7 @@ class engine():
       if ',' in bb[1]:
         lb1, lb2 = bb[1].split(',')
         p_code[lb1] = p_code[lb2] = ('.', -1,-1 )
-    return p_code
+    return p_code #???
 
   def first(self):
     self.redraw()
